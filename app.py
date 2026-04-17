@@ -104,21 +104,21 @@ with st.sidebar:
 
     st.divider()
 
-    # Streamlit Cloud free tier has ~1GB RAM — cap at 150 docs to avoid OOM.
-    # For larger runs, clone the repo and run locally: streamlit run app.py
     on_cloud = os.environ.get("HOME", "").startswith("/home/adminuser")
-    cloud_cap = 150 if on_cloud else 1000
 
-    mode = st.radio("Run mode", ["Pilot (fast, sample)", "Full (all documents)"])
-    sample_n = None
-    if mode.startswith("Pilot"):
-        sample_n = st.slider("Sample size", 50, cloud_cap, min(150, cloud_cap), step=50)
-
-    if on_cloud and mode == "Full (all documents)":
-        st.warning(
-            "Full mode on Streamlit Cloud will likely run out of memory. "
-            "Use Pilot mode (≤150 docs) here, or run the app locally for full runs."
+    if on_cloud:
+        st.info(
+            "**Cloud limit: 150 documents max.**\n\n"
+            "To run the full 22,000+ record dataset, run the app locally:\n"
+            "```\ngit clone https://github.com/arihantlodha-cmd/bank-ea-text-pipeline\n"
+            "cd bank-ea-text-pipeline\npip install -r requirements.txt\nstreamlit run app.py\n```"
         )
+        sample_n = st.slider("Sample size", 50, 150, 100, step=50)
+    else:
+        mode = st.radio("Run mode", ["Pilot (fast, sample)", "Full (all documents)"])
+        sample_n = None
+        if mode.startswith("Pilot"):
+            sample_n = st.slider("Sample size", 50, 1000, 300, step=50)
 
     n_topics = st.slider("Number of topics", 3, 15, 6)
     workers  = st.slider("Download workers", 2, 8 if on_cloud else 16, 4 if on_cloud else 8)
