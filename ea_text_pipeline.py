@@ -323,20 +323,27 @@ def clean_text(raw: str) -> str:
 def run_lda(docs: list[str], n_topics: int) -> tuple:
     """Returns (lda_model, vectorizer, doc_topic_matrix)."""
     print(f"\n[lda] Fitting CountVectorizer on {len(docs)} documents ...")
+    # min_df=5 is too aggressive for small samples; cap at 1% of corpus, minimum 2
+    min_df = max(2, min(5, len(docs) // 100))
     vectorizer = CountVectorizer(
         max_features=5000,
-        min_df=5,
+        min_df=min_df,
         max_df=0.85,
         ngram_range=(1, 2),
     )
     X = vectorizer.fit_transform(docs)
-    print(f"[lda] Vocabulary size: {X.shape[1]} | Matrix: {X.shape}")
+    print(f"[lda] Vocabulary size: {X.shape[1]} | Matrix: {X.shape} | min_df={min_df}")
+    if X.shape[1] == 0:
+        raise ValueError(
+            "CountVectorizer produced an empty vocabulary. "
+            "Check that text extraction succeeded for enough documents."
+        )
     print(f"[lda] Fitting LDA with {n_topics} topics (max_iter=50) ...")
     lda = LatentDirichletAllocation(
         n_components=n_topics,
         max_iter=50,
         random_state=42,
-        n_jobs=-1,
+        n_jobs=2,  # cap to avoid OOM on large runs
         verbose=0,
     )
     doc_topic = lda.fit_transform(X)

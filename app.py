@@ -10,6 +10,7 @@ import os
 import pickle
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -51,23 +52,35 @@ def load_summary():
         return ""
     return path.read_text()
 
-def run_pipeline(cmd):
-    """Run pipeline subprocess, stream stdout line-by-line into a Streamlit container."""
-    log_box = st.empty()
-    lines = []
-    process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1,
-        cwd=str(SCRIPT_DIR),
-    )
-    for line in process.stdout:
-        lines.append(line.rstrip())
-        log_box.code("\n".join(lines[-60:]), language=None)
-    process.wait()
-    return process.returncode, "\n".join(lines)
+def _pipeline_thread(cmd, state: dict):
+    """Worker: runs in a daemon thread, writes to state dict."""
+    try:
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            cwd=str(SCRIPT_DIR),
+        )
+        state["process"] = process
+        for line in process.stdout:
+            state["lines"].append(line.rstrip())
+        process.wait()
+        state["returncode"] = process.returncode
+    except Exception as exc:
+        state["lines"].append(f"[app error] {exc}")
+        state["returncode"] = -1
+    finally:
+        state["done"] = True
+
+
+def start_pipeline(cmd) -> dict:
+    """Launch pipeline in background thread; return shared state dict."""
+    state = {"lines": [], "returncode": None, "done": False, "process": None}
+    t = threading.Thread(target=_pipeline_thread, args=(cmd, state), daemon=True)
+    t.start()
+    return state
 
 # ── Sidebar — settings ────────────────────────────────────────────────────────
 with st.sidebar:
@@ -124,10 +137,25 @@ with tab_run:
 
     st.divider()
 
+    # ── Session state keys ─────────────────────────────────────────────────────
+    if "pipeline_state" not in st.session_state:
+        st.session_state.pipeline_state = None
+    if "pipeline_start" not in st.session_state:
+        st.session_state.pipeline_start = None
+
+    running = (
+        st.session_state.pipeline_state is not None
+        and not st.session_state.pipeline_state["done"]
+    )
+    finished = (
+        st.session_state.pipeline_state is not None
+        and st.session_state.pipeline_state["done"]
+    )
+
     if run_btn:
         if not csv_choice:
             st.error("Please select or upload a CSV file first.")
-        else:
+        elif not running:
             csv_path = SCRIPT_DIR / csv_choice
             OUTPUT_DIR.mkdir(exist_ok=True)
             CACHE_DIR.mkdir(exist_ok=True)
@@ -145,19 +173,36 @@ with tab_run:
             if skip_dl:
                 cmd += ["--skip_download"]
 
-            st.info("Pipeline running — this takes a few minutes. Do not close the tab.")
-            t0 = time.time()
-            returncode, full_log = run_pipeline(cmd)
-            elapsed = time.time() - t0
+            st.session_state.pipeline_state = start_pipeline(cmd)
+            st.session_state.pipeline_start = time.time()
+            st.rerun()
 
-            if returncode == 0:
-                st.success(f"Pipeline finished in {elapsed/60:.1f} min. See the **Results** tab.")
-                st.balloons()
-            else:
-                st.error("Pipeline exited with an error. See the log above.")
+    if running:
+        state = st.session_state.pipeline_state
+        elapsed = time.time() - st.session_state.pipeline_start
+        st.info(f"Pipeline running — {elapsed/60:.1f} min elapsed. Do not close the tab.")
+        log_box = st.empty()
+        log_box.code("\n".join(state["lines"][-60:]), language=None)
+        time.sleep(2)
+        st.rerun()
+
+    elif finished:
+        state = st.session_state.pipeline_state
+        elapsed = time.time() - st.session_state.pipeline_start
+        log_box = st.empty()
+        log_box.code("\n".join(state["lines"][-60:]), language=None)
+        if state["returncode"] == 0:
+            st.success(f"Pipeline finished in {elapsed/60:.1f} min. See the **Results** tab.")
+            st.balloons()
+        else:
+            st.error("Pipeline exited with an error. See the log above.")
+        if st.button("Clear / Run Again"):
+            st.session_state.pipeline_state = None
+            st.session_state.pipeline_start = None
+            st.rerun()
+
     else:
         st.info("Configure settings in the sidebar, then click **▶ Run Pipeline**.")
-
         if output_exists():
             st.success("Previous results are available in the Results tab.")
 
