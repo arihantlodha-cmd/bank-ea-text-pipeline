@@ -1,0 +1,12 @@
+2026-04-17 08:49:57,866 ERROR DOWNLOAD_FAIL url=https://occ.gov/static/enforcement-actions/eaSE 11-014.pdf err=HTTPSConnectionPool(host='occ.gov', port=443): Max retries exceeded with url: /static/enforcement-actions/eaSE%2011-014.pdf (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x16a1334d0>, 'Connection to occ.gov timed out. (connect timeout=30)'))
+2026-04-17 08:50:43,748 ERROR DOWNLOAD_FAIL url=DNE err=Invalid URL 'DNE': No scheme supplied. Perhaps you meant https://DNE?
+2026-04-17 08:52:15,163 ERROR DOWNLOAD_FAIL url=http://www.occ.gov/static/ots/enforcement/93139.pdf err=HTTPConnectionPool(host='www.occ.gov', port=80): Max retries exceeded with url: /static/ots/enforcement/93139.pdf (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x16bdaecf0>, 'Connection to www.occ.gov timed out. (connect timeout=30)'))
+2026-04-17 08:52:38,720 ERROR PDF_EXTRACT_FAIL path=/Users/arihantlodha/Downloads/ea_pdf_cache/af74f054ecced28e08361a98e4fae44d.pdf err=No /Root object! - Is this really a PDF?
+2026-04-17 08:52:58,952 ERROR PDF_EXTRACT_FAIL path=/Users/arihantlodha/Downloads/ea_pdf_cache/ace102b41fcdcfb70b09b4dc506e0afe.pdf err=No /Root object! - Is this really a PDF?
+2026-04-17 08:53:06,861 ERROR PDF_EXTRACT_FAIL path=/Users/arihantlodha/Downloads/ea_pdf_cache/bf348cb9d836f7b4637c64ade28af698.pdf err=No /Root object! - Is this really a PDF?
+2026-04-17 08:53:07,671 ERROR PDF_EXTRACT_FAIL path=/Users/arihantlodha/Downloads/ea_pdf_cache/7afed116bf44d9f29535c0b5efe9525f.pdf err=No /Root object! - Is this really a PDF?
+2026-04-17 08:53:23,139 ERROR PDF_EXTRACT_FAIL path=/Users/arihantlodha/Downloads/ea_pdf_cache/3d265e5a80c5a3ef79b95aeb987a8fc4.pdf err=No /Root object! - Is this really a PDF?
+2026-04-17 08:53:26,544 ERROR PDF_EXTRACT_FAIL path=/Users/arihantlodha/Downloads/ea_pdf_cache/98dfdecc0be7d9251f0141c9623c0eb6.pdf err=No /Root object! - Is this really a PDF?
+2026-04-17 08:53:30,679 ERROR PDF_EXTRACT_FAIL path=/Users/arihantlodha/Downloads/ea_pdf_cache/c7c49a6a22f6be9f2b183e5aeb18b736.pdf err=No /Root object! - Is this really a PDF?
+2026-04-17 08:53:30,682 ERROR PDF_EXTRACT_FAIL path=/Users/arihantlodha/Downloads/ea_pdf_cache/b53a572de43a17328f93e84ed3c01e48.pdf err=No /Root object! - Is this really a PDF?
+2026-04-17 08:53:34,643 ERROR PDF_EXTRACT_FAIL path=/Users/arihantlodha/Downloads/ea_pdf_cache/b53a572de43a17328f93e84ed3c01e48.pdf err=No /Root object! - Is this really a PDF?

@@ -1,0 +1,28 @@
+Bank EA Pipeline Summary
+==================================================
+Total CSV rows        : 22240
+Eligible (non-FDIC)   : 300
+LDA-eligible (≥50 tok): 227
+n_topics              : 6
+
+Extraction method breakdown:
+  direct: 221
+  failed: 19
+  html: 53
+  ocr_unavailable: 7
+
+Topic sizes (dominant topic assignment):
+  Topic 0: 12 docs
+  Topic 1: 50 docs
+  Topic 2: 33 docs
+  Topic 3: 67 docs
+  Topic 4: 59 docs
+  Topic 5: 6 docs
+
+Top 10 words per topic:
+  Topic 0: sales, practices, misconduct, audit, loan, risk, community, committee, loans, respondents
+  Topic 1: article, ensure, program, credit, plan, loan, risk, deputy, days, compliance
+  Topic 2: plan, regional, capital, directors, company, holding company, holding, compliance, business, days
+  Topic 3: article, proceedings, money, penalty, civil, civil money, money penalty, insured, currency, rights
+  Topic 4: stipulation, fdia, savings, issuance, prohibition, supervision, thrift, office thrift, thrift supervision, desist
+  Topic 5: article, product, customer, reimbursement, customers, protection, stipulation, plan, identity, eligible

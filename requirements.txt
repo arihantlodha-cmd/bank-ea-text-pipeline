@@ -1,0 +1,9 @@
+streamlit
+pdfplumber
+pytesseract
+requests
+beautifulsoup4
+scikit-learn
+pillow
+tqdm
+pandas
