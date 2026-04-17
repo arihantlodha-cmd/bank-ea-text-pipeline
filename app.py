@@ -98,7 +98,9 @@ with st.sidebar:
 
     n_topics = st.slider("Number of topics", 3, 15, 6)
     workers  = st.slider("Download workers", 2, 16, 8)
-    skip_dl  = st.checkbox("Skip re-downloading cached docs", value=True)
+    cache_exists = CACHE_DIR.exists() and any(CACHE_DIR.iterdir())
+    skip_dl  = st.checkbox("Skip re-downloading cached docs", value=cache_exists,
+                           help="Only check this if you've already run the pipeline once on this machine.")
 
     st.divider()
     run_btn = st.button("▶ Run Pipeline", type="primary", use_container_width=True)

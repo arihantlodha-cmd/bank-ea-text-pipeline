@@ -436,6 +436,14 @@ def main():
     # ----- LDA -----
     print("\n[step 5] Running LDA topic modeling ...")
     docs = [r["clean_text"] for r in eligible_lda]
+
+    if len(docs) == 0:
+        print("\n[ERROR] No documents survived cleaning. This usually means:")
+        print("  - Downloads were skipped (--skip_download) but no cache exists on this machine")
+        print("  - All downloads failed (check failures.log)")
+        print("  Fix: uncheck 'Skip re-downloading' and run again.")
+        sys.exit(1)
+
     if len(docs) < args.n_topics:
         print(f"[warning] Only {len(docs)} usable docs — fewer than n_topics={args.n_topics}. Reducing topics.")
         args.n_topics = max(2, len(docs) // 2)
