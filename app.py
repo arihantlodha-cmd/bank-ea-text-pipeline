@@ -104,19 +104,30 @@ with st.sidebar:
 
     st.divider()
 
+    # Streamlit Cloud free tier has ~1GB RAM — cap at 150 docs to avoid OOM.
+    # For larger runs, clone the repo and run locally: streamlit run app.py
+    on_cloud = os.environ.get("HOME", "").startswith("/home/adminuser")
+    cloud_cap = 150 if on_cloud else 1000
+
     mode = st.radio("Run mode", ["Pilot (fast, sample)", "Full (all documents)"])
     sample_n = None
     if mode.startswith("Pilot"):
-        sample_n = st.slider("Sample size", 50, 1000, 300, step=50)
+        sample_n = st.slider("Sample size", 50, cloud_cap, min(150, cloud_cap), step=50)
+
+    if on_cloud and mode == "Full (all documents)":
+        st.warning(
+            "Full mode on Streamlit Cloud will likely run out of memory. "
+            "Use Pilot mode (≤150 docs) here, or run the app locally for full runs."
+        )
 
     n_topics = st.slider("Number of topics", 3, 15, 6)
-    workers  = st.slider("Download workers", 2, 16, 8)
+    workers  = st.slider("Download workers", 2, 8 if on_cloud else 16, 4 if on_cloud else 8)
     cache_exists = CACHE_DIR.exists() and any(CACHE_DIR.iterdir())
     skip_dl  = st.checkbox("Skip re-downloading cached docs", value=cache_exists,
                            help="Only check this if you've already run the pipeline once on this machine.")
 
     st.divider()
-    run_btn = st.button("▶ Run Pipeline", type="primary", use_container_width=True)
+    run_btn = st.button("▶ Run Pipeline", type="primary", width="stretch")
 
 # ── Main area ─────────────────────────────────────────────────────────────────
 st.title("🏦 Bank Enforcement Action — Text Analysis")
@@ -251,7 +262,7 @@ with tab_results:
                 ea_csv.read_bytes(),
                 file_name="ea_with_topics.csv",
                 mime="text/csv",
-                use_container_width=True,
+                width="stretch",
             )
 
         words_csv = OUTPUT_DIR / "topic_word_lists.csv"
@@ -261,7 +272,7 @@ with tab_results:
                 words_csv.read_bytes(),
                 file_name="topic_word_lists.csv",
                 mime="text/csv",
-                use_container_width=True,
+                width="stretch",
             )
 
         summary_txt = OUTPUT_DIR / "pipeline_summary.txt"
@@ -270,7 +281,7 @@ with tab_results:
                 "📥 pipeline_summary.txt",
                 summary_txt.read_bytes(),
                 file_name="pipeline_summary.txt",
-                use_container_width=True,
+                width="stretch",
             )
 
         failures_log = OUTPUT_DIR / "failures.log"
@@ -279,7 +290,7 @@ with tab_results:
                 "📥 failures.log",
                 failures_log.read_bytes(),
                 file_name="failures.log",
-                use_container_width=True,
+                width="stretch",
             )
 
         st.divider()
@@ -292,7 +303,7 @@ with tab_results:
             topic_cols = [c for c in df.columns if "topic" in c.lower() and df[c].notna().any()]
             show_cols = ["Regulator", "Name", "StartDate", "URL"] + topic_cols
             show_cols = [c for c in show_cols if c in df.columns]
-            st.dataframe(df[show_cols].dropna(subset=["topic_dominant"]), use_container_width=True, height=400)
+            st.dataframe(df[show_cols].dropna(subset=["topic_dominant"]), width="stretch", height=400)
         except Exception as e:
             st.warning(f"Could not preview table: {e}")
 
