@@ -43,7 +43,13 @@ def load_topic_words():
     with open(path) as f:
         for row in csv.DictReader(f):
             t = int(row["topic"])
-            topics.setdefault(t, []).append((row["word"], float(row["weight"])))
+            word = row["word"]
+            if "weight" in row:
+                weight = float(row["weight"])
+            else:
+                rank = int(row.get("rank", 1))
+                weight = 1.0 / rank
+            topics.setdefault(t, []).append((word, weight))
     return topics
 
 def load_summary():
@@ -253,7 +259,7 @@ with tab_results:
 
         # Download buttons
         st.subheader("Download outputs")
-        dcol1, dcol2, dcol3, dcol4 = st.columns(4)
+        dcol1, dcol2, dcol3, dcol4, dcol5 = st.columns(5)
 
         ea_csv = OUTPUT_DIR / "ea_with_topics.csv"
         if ea_csv.exists():
@@ -293,6 +299,16 @@ with tab_results:
                 width="stretch",
             )
 
+        spotcheck_zip = OUTPUT_DIR / "spotcheck_sample.zip"
+        if spotcheck_zip.exists():
+            dcol5.download_button(
+                "📥 spotcheck_sample.zip",
+                spotcheck_zip.read_bytes(),
+                file_name="spotcheck_sample.zip",
+                mime="application/zip",
+                width="stretch",
+            )
+
         st.divider()
 
         # Preview table
@@ -328,7 +344,9 @@ with tab_about:
     |---|---|
     | `topic_dominant` | Which topic (0–N) best describes this document |
     | `topic_prob` | How strongly it matches (0–1) |
+    | `topic_ambiguous` | 1 if top-2 topic gap < 0.10 (document fits multiple topics) |
     | `topic_0_prob … topic_N_prob` | Score for every topic |
+    | `topic_0_flag … topic_N_flag` | 1 if topic score ≥ 0.20 (multi-topic presence flags) |
     | `extract_method` | How text was extracted: `direct`, `html`, `ocr`, `failed` |
 
     ## Regulators
